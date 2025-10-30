@@ -2,16 +2,29 @@ return {
 	"nvimtools/none-ls.nvim",
 	dependencies = { "nvim-lua/plenary.nvim" },
 	config = function()
-		local none_ls = require("null-ls")
+		local null_ls = require("null-ls")
 
-		none_ls.setup({
+		null_ls.setup({
 			sources = {
-				-- Keep Prettier for JS/TS/Vue
-				none_ls.builtins.formatting.prettier,
+				-- Prettier for all web formats + SVG (forces html parser for SVG)
+				null_ls.builtins.formatting.prettier.with({
+					filetypes = {
+						"javascript", "typescript", "vue",
+						"css", "scss", "less",
+						"html", "json", "yaml", "markdown",
+						"svg",
+					},
+					extra_args = function(params)
+						if params.ft == "svg" then
+							return { "--parser", "html" }
+						end
+						return {}
+					end,
+				}),
 			},
 		})
 
-		-- Keymap for manual formatting
+		-- Manual format keybinding
 		vim.keymap.set("n", "<C-i>", function()
 			vim.lsp.buf.format({ async = true })
 		end, { desc = "Format file with LSP" })
